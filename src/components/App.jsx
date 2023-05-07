@@ -11,7 +11,6 @@ const App = () => {
   const [search, setSearch] = useState('');
   const [images, setImages] = useState('');
   const [page, setPage] = useState(0);
-  const [total, setTotal] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [modal, setModal] = useState({ showModal: false, largeImageURL: '' });
@@ -73,7 +72,11 @@ const App = () => {
   return (
     <div>
       {/*текстове поле для введення запиту */}
-      <Searchbar handleSubmit={this.handleSubmit} />
+      <Searchbar
+        onSubmit={handleSubmit}
+        onChange={handleChange}
+        openModal={openModal}
+      />
 
       {/* Перевіряємо, чи є помилка */}
       {error && (
@@ -85,24 +88,19 @@ const App = () => {
       {/* відображення списку зображень */}
       <ImageGallery togleModal={this.openModal} images={images} />
 
+      {foundResult && (
+        <h2 style={{ textAlign: 'center' }}>No results found!</h2>
+      )}
+
       {/* Перевіряємо, чи відбувається завантаження */}
       {loading && <Loader />}
 
-      {/* Перевіряємо, чи є результати пошуку порожніми */}
-      {this.state.empty && (
-        <h2 style={{ textAlign: 'center' }}>
-          Sorry. There are no images ... 😭
-        </h2>
-      )}
-
       {/* Перевіряємо, чи потрібно відображати кнопку "Load more" */}
-      {total / 12 > page && <Button clickLoad={this.clickLoad} />}
+      {lastPage > page && <Button clickLoad={clickLoad} />}
 
       {/* Перевіряємо, чи потрібно відображати модальне вікно */}
       {modal.showModal && (
-        <Modal onClose={toggleModal}>
-          largeImageURL = {modal.largeImageURL} />
-        </Modal>
+        <Modal onClose={toggleModal} largeImageURL={modal.largeImageURL} />
       )}
     </div>
   );

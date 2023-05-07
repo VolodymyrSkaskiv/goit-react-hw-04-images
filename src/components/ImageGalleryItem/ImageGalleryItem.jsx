@@ -1,37 +1,23 @@
 import css from './ImageGalleryItem.module.css';
 import PropTypes from 'prop-types';
 
-const ImageGalleryItem = ({ images, togleModal }) => {
-  return (
-    <>
-      {images.map(item => (
-        <li
-          key={item.id}
-          onClick={evt => {
-            togleModal(item.largeImageURL, item.tags);
-          }}
-          className={css.galleryItem}
-        >
-          <img
-            loading="lazy"
-            className={css.ImageGalleryItem}
-            src={item.webformatURL}
-            alt={item.tags}
-          />
-        </li>
-      ))}
-    </>
-  );
-};
+const ImageGalleryItem = ({ webformatURL, largeImageURL, openModal }) => (
+  <li className={css.galleryItem}>
+    <img
+      loading="lazy"
+      className={css.ImageGalleryItem}
+      src={webformatURL}
+      alt=""
+      onClick={() => openModal(largeImageURL)}
+    />
+  </li>
+);
 
 // типизація пропсів
 ImageGalleryItem.propTypes = {
-  images: PropTypes.arrayOf(
-    PropTypes.shape({
-      largeImageURL: PropTypes.string.isRequired,
-      tags: PropTypes.string.isRequired,
-    })
-  ).isRequired,
+  webformatURL: PropTypes.string,
+  largeImageURL: PropTypes.string,
+  openModal: PropTypes.func,
 };
 
 export default ImageGalleryItem;
