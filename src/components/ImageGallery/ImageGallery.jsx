@@ -16,8 +16,14 @@ const ImageGallery = ({ images, openModal }) => (
 );
 
 ImageGallery.propTypes = {
-  images: PropTypes.arrayOf(PropTypes.object).isRequired, // масив об'єктів
-  togleModal: PropTypes.func.isRequired,
+  images: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number,
+      webformatURL: PropTypes.string,
+      largeImageURL: PropTypes.string,
+    })
+  ), // масив об'єктів
+  openModal: PropTypes.func.isRequired,
 };
 
 export default ImageGallery;

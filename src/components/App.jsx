@@ -9,7 +9,7 @@ import Modal from './Modal/Modal';
 const App = () => {
   const [inputValue, setInputValue] = useState('');
   const [search, setSearch] = useState('');
-  const [images, setImages] = useState('');
+  const [images, setImages] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -75,7 +75,7 @@ const App = () => {
       <Searchbar
         onSubmit={handleSubmit}
         onChange={handleChange}
-        openModal={openModal}
+        inputValue={inputValue}
       />
 
       {/* Перевіряємо, чи є помилка */}
@@ -86,7 +86,7 @@ const App = () => {
       )}
 
       {/* відображення списку зображень */}
-      <ImageGallery togleModal={this.openModal} images={images} />
+      <ImageGallery openModal={openModal} images={images} />
 
       {foundResult && (
         <h2 style={{ textAlign: 'center' }}>No results found!</h2>
