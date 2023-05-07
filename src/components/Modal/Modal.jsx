@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import css from './Modal.module.css';
 import PropTypes from 'prop-types';
 
-export const Modal = ({ closeModal, largeImageURL }) => {
+const Modal = ({ closeModal, largeImageURL }) => {
   // реєструє обробник події keydown на вікні браузера
   useEffect(() => {
     const keyDown = evt => {
@@ -31,3 +31,5 @@ Modal.propTypes = {
   closeModal: PropTypes.func,
   largeImageURL: PropTypes.string,
 };
+
+export default Modal;

@@ -1,140 +1,111 @@
-import { Component } from 'react';
-import { Toaster } from 'react-hot-toast';
-import { getSearch } from 'api/getSearch';
-import { Searchbar } from './Searchbar/Searchbar';
-import { ImageGallery } from './ImageGallery/ImageGallery';
-import { Loader } from './Loader/Loader';
-import { Button } from 'components/Button/Button';
-import { Modal } from './Modal/Modal';
+import { useState, useEffect } from 'react';
+import fetchImages from '../api/api';
+import Searchbar from './Searchbar/Searchbar';
+import ImageGallery from './ImageGallery/ImageGallery';
+import Loader from './Loader/Loader';
+import Button from 'components/Button/Button';
+import Modal from './Modal/Modal';
 
-export class App extends Component {
-  state = {
-    search: '',
-    images: [],
-    page: 1,
-    total: 1,
-    loading: false, // флаг, який показує, чи відбувається завантаження
-    error: null,
-    showModal: false,
-    empty: false, // флаг, який показує, чи є результати пошуку порожніми
+const App = () => {
+  const [inputValue, setInputValue] = useState('');
+  const [search, setSearch] = useState('');
+  const [images, setImages] = useState('');
+  const [page, setPage] = useState(0);
+  const [total, setTotal] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [modal, setModal] = useState({ showModal: false, largeImageURL: '' });
+  const [foundResult, setFoundResult] = useState(false);
+  const [lastPage, setLastPage] = useState(0);
+
+  const handleChange = event => {
+    setInputValue(event.target.value);
   };
 
-  // Викликається після того, як компонент був змонтований.
-  // Параметр '_' містить попередні пропи компонента, а PrevState - попередній стан компонента.
-  componentDidUpdate(_, PrevState) {
-    // Перевіряємо, чи змінились пропи search або page.
-    if (
-      PrevState.search !== this.state.search ||
-      PrevState.page !== this.state.page
-    ) {
-      this.getFunc(this.state.search, this.state.page);
+  const handleSubmit = event => {
+    event.preventDefault();
+    if (inputValue === '') {
+      alert('Please enter your query');
+      return;
     }
-  }
-
-  getFunc = (text, page) => {
-    this.setState({ loading: true });
-
-    getSearch(text, page)
-      .then(resp => resp.json())
-      .then(data => {
-        if (data.hits.length === 0) {
-          this.setState({ empty: true }); // вмикаємо флаг, який показує, чи є результати пошуку порожніми
-        }
-        this.setState(prevSt => ({
-          page: prevSt.page,
-          images: [...prevSt.images, ...data.hits], // додаємо нові картинки до масиву
-          total: data.total,
-        }));
-      })
-      .catch(error => {
-        this.setState({ error: error.message });
-      })
-      .finally(() => {
-        this.setState({ loading: false });
-      });
+    if (search === inputValue) return;
+    setImages([]);
+    setSearch(inputValue);
+    setPage(1);
   };
 
-  clickLoad = () => {
-    this.setState(prevSt => ({
-      page: prevSt.page + 1, // збільшуємо номер сторінки на +1
-    }));
+  const clickLoad = () => {
+    setPage(prevState => prevState + 1);
   };
 
-  // Функція, яка викликається при натисканні на картинку.
-  openModal = (largeImageURL, alt) => {
-    // Використовуємо setState з функцією, яка приймає попередній стан і повертає новий.
-    this.setState(({ showModal }) => {
-      return { showModal: !showModal, largeImageURL, alt };
-    });
+  const toggleModal = () => {
+    setModal(prevState => ({ ...prevState, showModal: !prevState.showModal }));
   };
 
-  // Функція, яка викликається при натисканні на кнопку "Search".
-  handleSubmit = search => {
-    // Очищаємо масив з картинками, а також ставимо початкові значення для сторінки,
-    // загальної кількості картинок, флагів і помилок.
-    this.setState({
-      search,
-      images: [],
-      page: 1,
-      total: 1,
-      loading: false,
-      error: null,
-      empty: false,
-    });
+  const openModal = largeImageURL => {
+    setModal(prevState => ({ ...prevState, largeImageURL }));
+    toggleModal();
   };
 
-  // Функція, яка викликається при натисканні на кнопку "Close".
-  closeModal = () => {
-    // Використовуємо setState з функцією, яка приймає попередній стан і повертає новий.
-    this.setState(({ showModal, largeImageURL, alt }) => {
-      return { showModal: !showModal, largeImageURL: null, alt: null };
-    });
-  };
+  useEffect(() => {
+    if (page === 0) return;
 
-  render() {
-    const { error, loading, images, total, page } = this.state;
-    return (
-      <div>
-        {/* Спливаюче повідомлення */}
-        <Toaster
-          toastOptions={{
-            duration: 1500,
-          }}
-        />
+    const fetchImagesByQuery = async searchQuery => {
+      setLoading(true); // показуємо лоадер
+      setError(null); // очищаємо помилку
+      setFoundResult(false); // очищаємо сповіщення про відсутність результатів
 
-        {/*текстове поле для введення запиту */}
-        <Searchbar handleSubmit={this.handleSubmit} />
+      try {
+        const response = await fetchImages(searchQuery, page);
+        setImages(prevState => [...prevState, ...response.hits]);
+        setLastPage(Math.ceil(response.totalHits / 12));
+        response.totalHits === 0 && setFoundResult(true); // якщо результатів немає, то відображаємо сповіщення
+      } catch (error) {
+        setError(error);
+      } finally {
+        setLoading(false); // прибираємо лоадер
+      }
+    };
 
-        {/* Перевіряємо, чи є помилка */}
-        {error && (
-          <h2 style={{ textAlign: 'center' }}>
-            Something went wrong: ({error})!
-          </h2>
-        )}
+    fetchImagesByQuery(search);
+  }, [page, search]);
 
-        {/* відображення списку зображень */}
-        <ImageGallery togleModal={this.openModal} images={images} />
+  return (
+    <div>
+      {/*текстове поле для введення запиту */}
+      <Searchbar handleSubmit={this.handleSubmit} />
 
-        {/* Перевіряємо, чи відбувається завантаження */}
-        {loading && <Loader />}
+      {/* Перевіряємо, чи є помилка */}
+      {error && (
+        <h2 style={{ textAlign: 'center' }}>
+          Something went wrong: ({error})!
+        </h2>
+      )}
 
-        {/* Перевіряємо, чи є результати пошуку порожніми */}
-        {this.state.empty && (
-          <h2 style={{ textAlign: 'center' }}>
-            Sorry. There are no images ... 😭
-          </h2>
-        )}
+      {/* відображення списку зображень */}
+      <ImageGallery togleModal={this.openModal} images={images} />
 
-        {/* Перевіряємо, чи потрібно відображати кнопку "Load more" */}
-        {total / 12 > page && <Button clickLoad={this.clickLoad} />}
+      {/* Перевіряємо, чи відбувається завантаження */}
+      {loading && <Loader />}
 
-        {/* Перевіряємо, чи потрібно відображати модальне вікно */}
-        {this.state.showModal && (
-          <Modal closeModal={this.closeModal}>
-            <img src={this.state.largeImageURL} alt={this.state.alt} />
-          </Modal>
-        )}
-      </div>
-    );
-  }
-}
+      {/* Перевіряємо, чи є результати пошуку порожніми */}
+      {this.state.empty && (
+        <h2 style={{ textAlign: 'center' }}>
+          Sorry. There are no images ... 😭
+        </h2>
+      )}
+
+      {/* Перевіряємо, чи потрібно відображати кнопку "Load more" */}
+      {total / 12 > page && <Button clickLoad={this.clickLoad} />}
+
+      {/* Перевіряємо, чи потрібно відображати модальне вікно */}
+      {modal.showModal && (
+        <Modal onClose={toggleModal}>
+          largeImageURL = {modal.largeImageURL} />
+        </Modal>
+      )}
+    </div>
+  );
+};
+
+export default App;

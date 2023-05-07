@@ -1,12 +1,10 @@
 import css from './ImageGalleryItem.module.css';
 import PropTypes from 'prop-types';
 
-// Функціональний компонент, який відповідає за елемент галереї.
-export const ImageGalleryItem = ({ images, togleModal }) => {
+const ImageGalleryItem = ({ images, togleModal }) => {
   return (
     <>
       {images.map(item => (
-        // При кліку на елемент галереї викликаємо функцію togleModal, яка відкриває модальне вікно.
         <li
           key={item.id}
           onClick={evt => {
@@ -35,3 +33,5 @@ ImageGalleryItem.propTypes = {
     })
   ).isRequired,
 };
+
+export default ImageGalleryItem;
