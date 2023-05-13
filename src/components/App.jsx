@@ -5,7 +5,7 @@ import ImageGallery from './ImageGallery/ImageGallery';
 import Loader from './Loader/Loader';
 import Button from 'components/Button/Button';
 import Modal from './Modal/Modal';
-
+import '../index.css';
 const App = () => {
   const [inputValue, setInputValue] = useState('');
   const [search, setSearch] = useState('');
@@ -77,31 +77,23 @@ const App = () => {
         onChange={handleChange}
         inputValue={inputValue}
       />
-
-      {/* Перевіряємо, чи є помилка */}
       {error && (
         <h2 style={{ textAlign: 'center' }}>
           Something went wrong: ({error})!
         </h2>
       )}
-
-      {/* відображення списку зображень */}
       <ImageGallery openModal={openModal} images={images} />
-
       {foundResult && (
         <h2 style={{ textAlign: 'center' }}>No results found!</h2>
       )}
-
       {/* Перевіряємо, чи відбувається завантаження */}
       {loading && <Loader />}
-
       {/* Перевіряємо, чи потрібно відображати кнопку "Load more" */}
       {lastPage > page && <Button clickLoad={clickLoad} />}
-
       {/* Перевіряємо, чи потрібно відображати модальне вікно */}
       {modal.showModal && (
-        <Modal onClose={toggleModal} largeImageURL={modal.largeImageURL} />
-      )}
+        <Modal closeModal={toggleModal} largeImageURL={modal.largeImageURL} />
+      )}{' '}
     </div>
   );
 };
