@@ -5,7 +5,7 @@ import ImageGallery from './ImageGallery/ImageGallery';
 import Loader from './Loader/Loader';
 import Button from 'components/Button/Button';
 import Modal from './Modal/Modal';
-// import '../index.css';
+import '../index.css';
 const App = () => {
   const [inputValue, setInputValue] = useState('');
   const [search, setSearch] = useState('');
