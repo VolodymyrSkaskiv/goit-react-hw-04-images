@@ -2,14 +2,15 @@ import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem'; // елем
 import PropTypes from 'prop-types';
 import css from './ImageGallery.module.css';
 
-const ImageGallery = ({ images, openModal }) => (
+const ImageGallery = ({ images, onOpenModal }) => (
   <ul className={css.gallery}>
-    {images.map(({ id, webformatURL, largeImageURL }) => (
+    {images.map(({ id, tags, webformatURL, largeImageURL }) => (
       <ImageGalleryItem
         key={id}
         webformatURL={webformatURL}
+        tags={tags}
         largeImageURL={largeImageURL}
-        openModal={openModal}
+        onOpenModal={onOpenModal}
       />
     ))}
   </ul>
@@ -18,12 +19,12 @@ const ImageGallery = ({ images, openModal }) => (
 ImageGallery.propTypes = {
   images: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.number,
-      webformatURL: PropTypes.string,
-      largeImageURL: PropTypes.string,
-    })
-  ), // масив об'єктів
-  openModal: PropTypes.func.isRequired,
+      id: PropTypes.number.isRequired,
+      webformatURL: PropTypes.string.isRequired,
+      largeImageURL: PropTypes.string.isRequired,
+    }).isRequired
+  ).isRequired, // масив об'єктів
+  onOpenModal: PropTypes.func.isRequired,
 };
 
 export default ImageGallery;

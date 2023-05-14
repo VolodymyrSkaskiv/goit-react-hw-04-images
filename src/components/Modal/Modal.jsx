@@ -2,12 +2,12 @@ import { useEffect } from 'react';
 import css from './Modal.module.css';
 import PropTypes from 'prop-types';
 
-const Modal = ({ closeModal, largeImageURL }) => {
+const Modal = ({ onCloseModal, largeImage, tags }) => {
   // реєструє обробник події keydown на вікні браузера
   useEffect(() => {
     const keyDown = evt => {
       if (evt.code === 'Escape') {
-        closeModal();
+        onCloseModal();
       }
     };
 
@@ -16,20 +16,32 @@ const Modal = ({ closeModal, largeImageURL }) => {
     return () => {
       window.removeEventListener('keydown', keyDown);
     };
-  }, [closeModal]);
+  }, [onCloseModal]);
+
+  const handleCloseBackdrop = evt => {
+    if (evt.currentTarget === evt.target) {
+      onCloseModal();
+    }
+  };
 
   return (
-    <div onClick={closeModal} className={css.Overlay}>
+    <div onClick={handleCloseBackdrop} className={css.Overlay}>
       <div className={css.Modal}>
-        <img className={css.modal__img} src={largeImageURL} alt="" />
+        <img
+          className={css.modal__img}
+          src={largeImage}
+          alt={tags}
+          width="1000"
+        />
       </div>
     </div>
   );
 };
 
 Modal.propTypes = {
-  closeModal: PropTypes.func,
-  largeImageURL: PropTypes.string,
+  onCloseModal: PropTypes.func.isRequired,
+  largeImage: PropTypes.string.isRequired,
+  tags: PropTypes.string,
 };
 
 export default Modal;

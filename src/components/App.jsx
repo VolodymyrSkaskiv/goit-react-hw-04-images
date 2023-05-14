@@ -1,99 +1,99 @@
 import { useState, useEffect } from 'react';
-import fetchImages from '../api/api';
+import { getImages } from 'api/api';
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Loader from './Loader/Loader';
 import Button from 'components/Button/Button';
+import { ToastContainer, toast } from 'react-toastify';
+
 import Modal from './Modal/Modal';
 import '../index.css';
 const App = () => {
-  const [inputValue, setInputValue] = useState('');
   const [search, setSearch] = useState('');
   const [images, setImages] = useState([]);
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [largeImage, setLargeImage] = useState('');
+  const [tags, setTags] = useState('');
+  const [total, setTotal] = useState(0);
   const [error, setError] = useState(null);
-  const [modal, setModal] = useState({ showModal: false, largeImageURL: '' });
-  const [foundResult, setFoundResult] = useState(false);
-  const [lastPage, setLastPage] = useState(0);
-
-  const handleChange = event => {
-    setInputValue(event.target.value);
-  };
-
-  const handleSubmit = event => {
-    event.preventDefault();
-    if (inputValue === '') {
-      alert('Please enter your query');
-      return;
-    }
-    if (search === inputValue) return;
-    setImages([]);
-    setSearch(inputValue);
-    setPage(1);
-  };
-
-  const clickLoad = () => {
-    setPage(prevState => prevState + 1);
-  };
-
-  const toggleModal = () => {
-    setModal(prevState => ({ ...prevState, showModal: !prevState.showModal }));
-  };
-
-  const openModal = largeImageURL => {
-    setModal(prevState => ({ ...prevState, largeImageURL }));
-    toggleModal();
-  };
 
   useEffect(() => {
-    if (page === 0) return;
+    if (search !== '') {
+      fetchImages(search, page);
+    }
+  }, [page, search]); //не пустий рядок пошуку
 
-    const fetchImagesByQuery = async searchQuery => {
-      setLoading(true); // показуємо лоадер
-      setError(null); // очищаємо помилку
-      setFoundResult(false); // очищаємо сповіщення про відсутність результатів
-
-      try {
-        const response = await fetchImages(searchQuery, page);
-        setImages(prevState => [...prevState, ...response.hits]);
-        setLastPage(Math.ceil(response.totalHits / 12));
-        response.totalHits === 0 && setFoundResult(true); // якщо результатів немає, то відображаємо сповіщення
-      } catch (error) {
-        setError(error);
-      } finally {
-        setLoading(false); // прибираємо лоадер
+  const fetchImages = async (search, page) => {
+    try {
+      setLoading(true);
+      const data = await getImages(search, page);
+      if (data.hits.length === 0) {
+        return toast.error(
+          "We didn't find anything for this search :(  Try another option"
+        );
       }
-    };
 
-    fetchImagesByQuery(search);
-  }, [page, search]);
+      setTotal(data.totalHits);
+      setImages(prev => [...prev, ...data.hits]);
+    } catch (error) {
+      setError(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const handleSubmit = search => {
+    setSearch(search);
+    setPage(1);
+    setImages([]);
+  };
+
+  const onLoadMore = () => {
+    setPage(prev => prev + 1);
+  };
+
+  const onOpenModal = (largeImage, tags) => {
+    setShowModal(true);
+    setLargeImage(largeImage);
+    setTags(tags);
+  };
+
+  const onCloseModal = () => {
+    setShowModal(false);
+    setLargeImage('');
+    setTags('');
+  };
+
+  const totalPage = total / images.length;
   return (
     <div>
-      {/*текстове поле для введення запиту */}
-      <Searchbar
-        onSubmit={handleSubmit}
-        onChange={handleChange}
-        inputValue={inputValue}
-      />
+      <Searchbar onSubmit={handleSubmit} />
+      {images.length === 0 && (
+        <p>Enter a query on the topic you are interested in</p>
+      )}
+      {loading && <Loader />}
+      {images.length !== 0 && (
+        <ImageGallery images={images} onOpenModal={onOpenModal} />
+      )}
+      {totalPage > 1 && !loading && images.length !== 0 && (
+        <Button onClick={onLoadMore} />
+      )}
+      {showModal && (
+        <Modal
+          largeImage={largeImage}
+          tags={tags}
+          onCloseModal={onCloseModal}
+        />
+      )}
       {error && (
-        <h2 style={{ textAlign: 'center' }}>
-          Something went wrong: ({error})!
+        <h2>
+          We didn't find anything for this search :(
+          <span>Try another option</span>
         </h2>
       )}
-      <ImageGallery openModal={openModal} images={images} />
-      {foundResult && (
-        <h2 style={{ textAlign: 'center' }}>No results found!</h2>
-      )}
-      {/* Перевіряємо, чи відбувається завантаження */}
-      {loading && <Loader />}
-      {/* Перевіряємо, чи потрібно відображати кнопку "Load more" */}
-      {lastPage > page && <Button clickLoad={clickLoad} />}
-      {/* Перевіряємо, чи потрібно відображати модальне вікно */}
-      {modal.showModal && (
-        <Modal closeModal={toggleModal} largeImageURL={modal.largeImageURL} />
-      )}{' '}
+      <ToastContainer autoClose={2000} theme="dark" />
     </div>
   );
 };

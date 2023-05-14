@@ -1,16 +1,16 @@
 import css from './Button.module.css';
 import PropTypes from 'prop-types';
 // Функціональний компонент, який відповідає за кнопку "Load more".
-const Button = ({ clickLoad }) => {
+const Button = ({ onClick }) => {
   return (
-    <button onClick={clickLoad} className={css.Button} type="button">
+    <button onClick={() => onClick()} className={css.Button} type="button">
       Load more
     </button>
   );
 };
 
 Button.propTypes = {
-  clickLoad: PropTypes.func.isRequired,
+  onClick: PropTypes.func.isRequired,
 };
 
 export default Button;
