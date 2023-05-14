@@ -31,7 +31,7 @@ const Modal = ({ onCloseModal, largeImage, tags }) => {
           className={css.modal__img}
           src={largeImage}
           alt={tags}
-          width="1000"
+          width="1200"
         />
       </div>
     </div>
